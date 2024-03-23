@@ -113,7 +113,7 @@ class Application:
         wdFormatPDF = 17
 
         self.entrada = self.path_text.get(1.0, 'end-1c')
-        self.saida = self.new_path_text.get(1.0, 'end-1c')
+        self.saida = self.new_path_text.get(1.0, 'end-1c') + r'\{}'.format(self.Entry_name.get())
 
         print(self.entrada)
         print(self.saida)
