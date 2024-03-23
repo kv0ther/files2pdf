@@ -4,6 +4,7 @@ import win32com
 from win32com import client
 root = Tk()
 
+
 class Application:
 
     def __init__(self):
@@ -35,7 +36,6 @@ class Application:
 
         self.bt_buscar_2 = tkinter.Button(self.frame_1, text='buscar', command=self.buscar_2)
         self.bt_buscar_2.place(relx=0.01, rely=0.61, relwidth=0.1, relheight=0.1)
-        # ddddce
 
         # Entry
         self.Entry_1 = Entry(self.frame_1)
@@ -71,8 +71,8 @@ class Application:
 
     def widgets_frame2(self):
         # criando botão de word2pdf
-        self.bt_word2pddf = Button(self.frame_2, text='Word para PDF', command=self.word_for_pdf)
-        self.bt_word2pddf.place(relx=0.01, rely=0.02, relwidth=0.13, relheight=0.15)
+        self.bt_word2pdf = Button(self.frame_2, text='Word para PDF', command=self.word_for_pdf)
+        self.bt_word2pdf.place(relx=0.01, rely=0.02, relwidth=0.13, relheight=0.15)
 
         self.bt_excel2pdf = Button(self.frame_2, text='Excel para PDF', command=self.excel_for_pdf)
         self.bt_excel2pdf.place(relx=0.15, rely=0.02, relwidth=0.13, relheight=0.15)
@@ -80,7 +80,7 @@ class Application:
 # criando função de conversão
     def buscar_1(self):
         self.path_text.configure(state='normal')
-        self.path_orig = tkinter.filedialog.askopenfile(mode='r', initialdir='/Documentos',
+        self.path_orig = tkinter.filedialog.askopenfile(mode='w', initialdir='/Documentos',
                                                         initialfile='C:/Users/rafae/OneDrive/Área de Trabalho'
                                                                     '/Memorial_descritivo.docx',
                                                         title="Selecione um arquivo",
@@ -104,21 +104,19 @@ class Application:
 
         self.entrada = self.path_text.get(1.0)
         self.saida = self.new_path_text.get(1.0)
-
         sheets = excel.Workbooks.Open(self.entrada)
         work_sheets = sheets.Worksheets[0]
 
         work_sheets.ExportAsFixedFormat(0, self.saida)
 
-
     def word_for_pdf(self):
         wdFormatPDF = 17
 
-        self.entrada = self.Entry_1.get()
-        self.saida = self.Entry_2.get()
+        self.entrada = self.path_text.get(1.0, 'end-1c')
+        self.saida = self.new_path_text.get(1.0, 'end-1c')
 
         print(self.entrada)
-        print('ag')
+        print(self.saida)
 
         word = win32com.client.Dispatch('Word.Application')
         doc = word.Documents.Open(self.entrada)
