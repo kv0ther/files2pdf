@@ -1,6 +1,7 @@
 from tkinter import *
 import tkinter.filedialog
 import win32com
+import time
 from win32com import client
 from pathlib import Path
 
@@ -129,6 +130,7 @@ class Application:
                 work_sheets.ExportAsFixedFormat(0, saida)
                 self.excel.Quit()
                 var += 1
+                time.sleep(3)
             self.excel.Quit()
         else:
             entrada = self.path_text.get(1.0, 'end-1c')
