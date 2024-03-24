@@ -98,6 +98,8 @@ class Application:
             a = path_orig.name.replace('/', '\\')
             self.path_text.delete(1.0, 'end')
             self.path_text.insert(1.0, a)
+            self.path_text.configure(state='disabled')
+
 
     def buscar_2(self):
         print('path')
@@ -109,13 +111,28 @@ class Application:
         self.new_path_text.configure(state='disabled')
 
     def excel_for_pdf(self):
-        diretorio = Path(self.path_text.get(1.0, 'end-1c'))
-        lista_arquivos = list(diretorio.glob('*.xlsx'))
-        var = 1
+        if self.check_files.get() == 1:
+            diretorio = Path(self.path_text.get(1.0, 'end-1c'))
+            lista_arquivos = list(diretorio.glob('*.xlsx'))
+            var = 1
 
-        for arquivo in lista_arquivos:
-            entrada = str(arquivo)
-            saida = self.new_path_text.get(1.0, 'end-1c') + r'\{}{}'.format(self.Entry_name.get(), var)
+            for arquivo in lista_arquivos:
+                entrada = str(arquivo)
+                saida = self.new_path_text.get(1.0, 'end-1c') + r'\{}({})'.format(self.Entry_name.get(), var)
+
+                print(entrada)
+                print(saida)
+
+                self.excel = win32com.client.Dispatch("Excel.Application")
+                sheets = self.excel.Workbooks.Open(entrada)
+                work_sheets = sheets.Worksheets[0]
+                work_sheets.ExportAsFixedFormat(0, saida)
+                self.excel.Quit()
+                var += 1
+            self.excel.Quit()
+        else:
+            entrada = self.path_text.get(1.0, 'end-1c')
+            saida = self.new_path_text.get(1.0, 'end-1c') + r'\{}{}'.format(self.Entry_name.get(), '.pdf')
 
             print(entrada)
 
@@ -123,8 +140,7 @@ class Application:
             sheets = self.excel.Workbooks.Open(entrada)
             work_sheets = sheets.Worksheets[0]
             work_sheets.ExportAsFixedFormat(0, saida)
-            var += 1
-        self.excel.quit()
+            self.excel.Quit()
 
     def word_for_pdf(self):
         if self.check_files.get() == 1:
@@ -152,6 +168,7 @@ class Application:
             doc = word.Documents.Open(entrada)
             doc.SaveAs(saida, FileFormat=wdformatpdf)
             doc.Close()
+            word.Quit()
 
 
 Application()

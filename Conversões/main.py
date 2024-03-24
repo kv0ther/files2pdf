@@ -28,7 +28,7 @@ class Application:
         self.frame_1 = Frame(self.root, bd=4, bg='#ddd9ce', highlightbackground='black', highlightthickness=3)
         self.frame_1.place(relx=0.02, rely=0.02, relwidth=0.96, relheight=0.56)
 
-        self.frame_2= Frame(self.root, bd=4, bg='#ddd9ce', highlightbackground='black', highlightthickness=3)
+        self.frame_2 = Frame(self.root, bd=4, bg='#ddd9ce', highlightbackground='black', highlightthickness=3)
         self.frame_2.place(relx=0.02, rely=0.6, relwidth=0.96, relheight=0.36)
 
     def widgets_frame1(self):
@@ -67,7 +67,7 @@ class Application:
         # checkbutton
         self.check_files = IntVar()
         cb_arquivos = Checkbutton(self.frame_1, text='varios arquivos', variable=self.check_files,
-                                  onvalue=1, offvalue=0, background='#dddddd', command=self.comando)
+                                  onvalue=1, offvalue=0, background='#dddddd')
         cb_arquivos.place(relx=0.01, rely=0.8, relwidth=0.14, relheight=0.1)
 
     def widgets_frame2(self):
@@ -78,54 +78,97 @@ class Application:
         self.bt_excel2pdf = Button(self.frame_2, text='Excel para PDF', command=self.excel_for_pdf)
         self.bt_excel2pdf.place(relx=0.15, rely=0.02, relwidth=0.13, relheight=0.15)
 
-# criando função de conversão
+    # criando função de conversão
     def comando(self):
         print(self.check_files.get())
 
     def buscar_1(self):
-        self.path_text.configure(state='normal')
-        self.path_orig = tkinter.filedialog.askdirectory(initialdir='/Documentos', title="Selecione uma pasta")
-        a = self.path_orig.replace('/', '\\')
-        self.path_text.delete(1.0, 'end')
-        self.path_text.insert(1.0, a)
-        self.path_text.configure(state='disabled')
+        if self.check_files.get() == 1:
+            self.path_text.configure(state='normal')
+            path_orig = tkinter.filedialog.askdirectory(initialdir='/Documentos', title="Selecione uma pasta")
+            a = path_orig.replace('/', '\\')
+            self.path_text.delete(1.0, 'end')
+            self.path_text.insert(1.0, a)
+            self.path_text.configure(state='disabled')
+        else:
+            self.path_text.configure(state='normal')
+            path_orig = tkinter.filedialog.askopenfile('r', initialdir='/Documentos', title="Selecione uma pasta",
+                                                       filetypes=(('arquivos Word', '*.docx'),
+                                                                  ('arquivos Excel', '*.xlsx')))
+            a = path_orig.name.replace('/', '\\')
+            self.path_text.delete(1.0, 'end')
+            self.path_text.insert(1.0, a)
+            self.path_text.configure(state='disabled')
+
 
     def buscar_2(self):
+        print('path')
         self.new_path_text.configure(state='normal')
-        self.new_path = tkinter.filedialog.askdirectory(initialdir='/Documentos', title="Selecione um arquivo")
-        a = self.new_path.replace('/', '\\')
+        new_path = tkinter.filedialog.askdirectory(initialdir='/Documentos', title="Selecione uma pasta")
+        a = new_path.replace('/', '\\')
         self.new_path_text.delete(1.0, 'end')
         self.new_path_text.insert(1.0, a)
         self.new_path_text.configure(state='disabled')
 
     def excel_for_pdf(self):
-        excel = win32com.client.Dispatch("Excel.Application")
+        if self.check_files.get() == 1:
+            diretorio = Path(self.path_text.get(1.0, 'end-1c'))
+            lista_arquivos = list(diretorio.glob('*.xlsx'))
+            var = 1
 
-        entrada = self.path_text.get(1.0)
-        saida = self.new_path_text.get(1.0)
-        sheets = excel.Workbooks.Open(entrada)
-        work_sheets = sheets.Worksheets[0]
+            for arquivo in lista_arquivos:
+                entrada = str(arquivo)
+                saida = self.new_path_text.get(1.0, 'end-1c') + r'\{}({})'.format(self.Entry_name.get(), var)
 
-        work_sheets.ExportAsFixedFormat(0, saida)
+                print(entrada)
+                print(saida)
 
-    def word_for_pdf(self):
-        diretorio = Path(self.path_text.get(1.0, 'end-1c'))
-
-        lista_arquivos = list(diretorio.glob('*.docx'))
-
-        for arquivo in lista_arquivos:
-            wdFormatPDF = 17
-
-            entrada = str(arquivo)
-            saida = self.new_path_text.get(1.0, 'end-1c') + r'\{}'.format(self.Entry_name.get())
+                self.excel = win32com.client.Dispatch("Excel.Application")
+                sheets = self.excel.Workbooks.Open(entrada)
+                work_sheets = sheets.Worksheets[0]
+                work_sheets.ExportAsFixedFormat(0, saida)
+                self.excel.Quit()
+                var += 1
+            self.excel.Quit()
+        else:
+            entrada = self.path_text.get(1.0, 'end-1c')
+            saida = self.new_path_text.get(1.0, 'end-1c') + r'\{}{}'.format(self.Entry_name.get(), '.pdf')
 
             print(entrada)
-            print(saida)
 
+            self.excel = win32com.client.Dispatch("Excel.Application")
+            sheets = self.excel.Workbooks.Open(entrada)
+            work_sheets = sheets.Worksheets[0]
+            work_sheets.ExportAsFixedFormat(0, saida)
+            self.excel.Quit()
+
+    def word_for_pdf(self):
+        if self.check_files.get() == 1:
+            diretorio = Path(self.path_text.get(1.0, 'end-1c'))
+            var = 1
+            lista_arquivos = list(diretorio.glob('*.docx'))
+
+            for arquivo in lista_arquivos:
+                entrada = str(arquivo)
+                saida = self.new_path_text.get(1.0, 'end-1c') + r'\{}{}.pdf'.format(self.Entry_name.get(), var)
+
+                wdformatpdf = 17
+                self.word = win32com.client.Dispatch('Word.Application')
+                doc = self.word.Documents.Open(entrada)
+                doc.SaveAs(saida, FileFormat=wdformatpdf)
+                doc.Close()
+                var += 1
+            self.word.quit()
+        else:
+            entrada = self.path_text.get(1.0, 'end-1c')
+            saida = self.new_path_text.get(1.0, 'end-1c') + r'\{}.pdf'.format(self.Entry_name.get())
+
+            wdformatpdf = 17
             word = win32com.client.Dispatch('Word.Application')
             doc = word.Documents.Open(entrada)
-            doc.SaveAs(saida, FileFormat=wdFormatPDF)
+            doc.SaveAs(saida, FileFormat=wdformatpdf)
             doc.Close()
             word.Quit()
+
 
 Application()
